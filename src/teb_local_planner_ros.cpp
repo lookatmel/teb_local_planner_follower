@@ -356,6 +356,30 @@ uint32_t TebLocalPlannerROS::computeVelocityCommands(const geometry_msgs::PoseSt
   boost::mutex::scoped_lock cfg_lock(cfg_.configMutex());
     
   // Now perform the actual planning
+  if(cfg_.obstacle_pause_distance > 0 && !transformed_plan.empty())
+  {
+    auto ft = costmap_ros_->getRobotFootprint();
+    auto begin = transformed_plan.begin();
+    double distance = 0;
+    for(auto i = transformed_plan.begin() + 1; i != transformed_plan.end(); i++)
+    {
+      distance += std::hypot(i->pose.position.x - begin->pose.position.x,
+                                    i->pose.position.y - begin->pose.position.y);
+      if(distance < cfg_.obstacle_pause_distance)
+      {
+        double yaw = tf2::getYaw(i->pose.orientation);
+        double cost = costmap_model_->footprintCost(i->pose.position.x, i->pose.position.y, yaw, ft, robot_inscribed_radius_, robot_circumscribed_radius);
+        if(cost == -1)
+        {
+          cmd_vel.twist.angular.z = 0;
+          cmd_vel.twist.linear.x = 0;
+          cmd_vel.twist.linear.y = 0;
+          ROS_WARN("pause cost %f, distance %f", cost, distance);
+          return mbf_msgs::ExePathResult::SUCCESS;
+        }
+      }
+    }
+  }
 //   bool success = planner_->plan(robot_pose_, robot_goal_, robot_vel_, cfg_.goal_tolerance.free_goal_vel); // straight line init
   bool success = planner_->plan(transformed_plan, &robot_vel_, cfg_.goal_tolerance.free_goal_vel);
   if (!success)

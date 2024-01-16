@@ -68,6 +68,7 @@ public:
 
   RobotFootprintModelPtr robot_model; //!< model of the robot's footprint
 
+  double obstacle_pause_distance;
   //! Trajectory related parameters
   struct Trajectory
   {
@@ -249,6 +250,7 @@ public:
     map_frame = "odom";
     robot_model = boost::make_shared<PointRobotFootprint>();
 
+    obstacle_pause_distance = -1;
     // Trajectory
 
     trajectory.teb_autosize = true;

@@ -47,6 +47,7 @@ void TebConfig::loadRosParamFromNodeHandle(const ros::NodeHandle& nh)
   nh.param("odom_topic", odom_topic, odom_topic);
   nh.param("map_frame", map_frame, map_frame);
   
+  nh.param("obstacle_pause_distance", obstacle_pause_distance, obstacle_pause_distance);
   // Trajectory
   nh.param("teb_autosize", trajectory.teb_autosize, trajectory.teb_autosize);
   nh.param("dt_ref", trajectory.dt_ref, trajectory.dt_ref);
